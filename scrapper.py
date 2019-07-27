@@ -26,9 +26,13 @@ else:
 #direccion url solicitada en el ejercicio
 url='http://www.seg-social.es/wps/portal/wss/internet/EstadisticasPresupuestosEstudios/Estadisticas/EST8/EST10/EST305/1836?changeLanguage=es'
 
-
-response=requests.get(url)
-
+try:
+    response=requests.get(url)
+except requests.exceptions.RequestException as e:
+    print("ERROR EN CONEXION: ")
+    print(e)
+    print("--------------------")
+    sys.exit(1)
 
 soup = BeautifulSoup (response.text, "html.parser")
 
@@ -53,12 +57,18 @@ for link in soup.find_all('a'):
                 """
                 urldownlowad=pattern_web+href_link
                 
-                #deducir nuevo nombre
+                #inferir el nuevo nombre
                 index=urldownlowad.index("AfiliadosMuni-")+len("AfiliadosMuni-")
                 download_name=urldownlowad[index+3:index+7]+urldownlowad[index:index+2]+".xlsx"
                 print("archivo descargado: "+download_name)
                 #descargar archivo y renombrar
-                archivo_tmp, header=urllib.request.urlretrieve(urldownlowad)
+                try:
+                    archivo_tmp, header=urllib.request.urlretrieve(urldownlowad)
+                except urllib.request.urllib.ERROR as e:
+                    print("ERROR EN LA DESCARGA DE DOCUMENTOS: ")
+                    print(e)
+                    print("-----------------------------------")
+                    sys.exit(1)
                 with open (directorio+download_name, 'wb') as archivo:
                     with open(archivo_tmp, 'rb') as tmp:
                         archivo.write(tmp.read())
